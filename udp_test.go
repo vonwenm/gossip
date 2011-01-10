@@ -2,6 +2,7 @@ package transport
 
 import (
 	"testing"
+	"os"
 )
 
 const expectedByte byte = 0x42
@@ -22,7 +23,7 @@ func TestConn(t *testing.T) {
 
 func startServer(t *testing.T) {
 	conn := NewConn()
-	go monitor(conn, t)
+	go monitor(conn.Err, t)
 	conn.AddHandler(sendReply)
 	err := conn.Listen(9999)
 	if err != nil {
@@ -33,7 +34,7 @@ func startServer(t *testing.T) {
 
 func startClient(t *testing.T) {
 	conn := NewConn()
-	go monitor(conn, t)
+	go monitor(conn.Err, t)
 	conn.AddHandler(receiveReply)
 	if err := conn.Dial("127.0.0.1:9999"); err != nil {
 		t.Fatalf("Cannot connect to server: %q", err)
@@ -46,8 +47,8 @@ func startClient(t *testing.T) {
 
 // Fail all tests if connector encounters error.
 // Since testing.T is thread-safe, this function can be run as a goroutine.
-func monitor(conn *Conn, t *testing.T) {
-	for err := range conn.Err {
+func monitor(errors <-chan os.Error, t *testing.T) {
+	for err := range errors {
 		t.Fatalf("Encountered unexpected error %q", err)
 	}
 }
