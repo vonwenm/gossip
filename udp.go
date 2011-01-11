@@ -1,4 +1,4 @@
-// Connectionless transport service
+// Connectionless transport library
 package gossip
 
 import (
@@ -8,6 +8,7 @@ import (
 	"fmt"
 )
 
+// Payload carried by UDP
 type Message []byte
 
 // See RFC 1035 Section 4.2.1
@@ -19,13 +20,13 @@ type Packet struct {
 	Msg  Message
 }
 
-// Closure to handle incoming packets
+// Closure interface to handle incoming packets
 type EventHandler func(*Conn, *Packet)
 
 // Once connected, any errors encountered are piped
 // down Conn.Err; this channel is closed on disconnect.
 type Conn struct {
-	// Error channel to transmit any fail back to the caller
+	// Error channel to transmit any failure back to the caller
 	Err chan os.Error
 
 	// Handle incoming packets read from the socket
@@ -45,12 +46,14 @@ func NewPacket(addr string, msg Message) *Packet {
 	return &Packet{udpAddr, msg}
 }
 
+// Allocate memory without opening the socket yet.
 func NewConn() *Conn {
 	conn := new(Conn)
 	conn.initialize()
 	return conn
 }
 
+// Allocate memory for internal and external data structures.
 func (conn *Conn) initialize() {
 	conn.in = make(chan *Packet)
 	conn.out = make(chan *Packet)
@@ -65,6 +68,8 @@ var (
 	ErrNilPacket        = os.NewError("Encountered nil packet")
 )
 
+// Listen for incoming packets on the specified localhost port.
+// Call Disconnect to release the underlying resources.
 func (conn *Conn) Listen(port uint) (err os.Error) {
 	if conn.IsConnected() {
 		return ErrAlreadyConnected
@@ -83,7 +88,8 @@ func (conn *Conn) Listen(port uint) (err os.Error) {
 	return nil
 }
 
-
+// Establish an unreliable, packet-based connection with the remote end-point.
+// Call Disconnect to release the underlying resources.
 func (conn *Conn) Dial(remoteAddr string) (err os.Error) {
 	if conn.IsConnected() {
 		return ErrAlreadyConnected
@@ -100,20 +106,26 @@ func (conn *Conn) Dial(remoteAddr string) (err os.Error) {
 	return nil
 }
 
+// Determine if socket has been opened.
 func (conn *Conn) IsConnected() bool {
 	return conn.sock != nil
 }
 
+// Release socket and channel resources.
 func (conn *Conn) Disconnect() {
 	close(conn.in)
 	close(conn.out)
 	close(conn.Err)
-	conn.sock.Close()
+
+	if conn.sock != nil {
+		conn.sock.Close()
+	}
 
 	// be ready for the next connection
 	conn.initialize()
 }
 
+// Send the specified message to the earlier dialed remote end-point.
 func (conn *Conn) Send(msg Message) {
 	if conn.IsConnected() {
 		conn.out <- &Packet{nil, msg}
@@ -122,6 +134,7 @@ func (conn *Conn) Send(msg Message) {
 	}
 }
 
+// Send the message to the remote end-point over an unreliable connection.
 func (conn *Conn) SendTo(msg Message, addr *net.UDPAddr) {
 	if conn.IsConnected() {
 		conn.out <- &Packet{addr, msg}
@@ -197,6 +210,7 @@ func (conn *Conn) dispatchEvent(p *Packet) {
 	}
 }
 
+// Registers an event handler which is invoked on incoming packets.
 func (conn *Conn) AddHandler(f EventHandler) {
 	conn.handlers = append(conn.handlers, f)
 }
