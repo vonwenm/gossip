@@ -7,7 +7,7 @@ import (
 	"os"
 	"bufio"
 	"net"
-	"../_obj/transport"
+	"github.com/ahorn/gotransport"
 )
 
 var port *uint = flag.Uint("p", 9999, "listening port")
