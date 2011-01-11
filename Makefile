@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=transport
+TARG=gossip
 GOFMT=gofmt
 
 GOFILES=\

@@ -1,5 +1,5 @@
 // Connectionless transport service
-package transport
+package gossip
 
 import (
 	"net"

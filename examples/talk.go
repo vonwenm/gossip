@@ -7,7 +7,7 @@ import (
 	"os"
 	"bufio"
 	"net"
-	"github.com/ahorn/gotransport"
+	"github.com/ahorn/gossip"
 )
 
 var port *uint = flag.Uint("p", 9999, "listening port")
@@ -24,7 +24,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	conn := transport.NewConn()
+	conn := gossip.NewConn()
 	go monitor(conn.Err)
 
 	conn.AddHandler(echo)
@@ -70,7 +70,7 @@ func read(lines chan<- string) {
 }
 
 // Event handler to print the response of the conversation partner
-func echo(conn *transport.Conn, p *transport.Packet) {
+func echo(conn *gossip.Conn, p *gossip.Packet) {
 	line := string([]byte(p.Msg))
 	fmt.Print(">", line)
 }
