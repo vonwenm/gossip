@@ -54,7 +54,7 @@ func main() {
 // Reads lines from the text console and pipe them to the 'lines' channel.
 // Once EOF is encountered, the channel is automatically closed.
 func read(lines chan<- string) {
-	reader := bufio.NewReader(os.Stdin) 
+	reader := bufio.NewReader(os.Stdin)
 
 	var line string
 	var err os.Error
@@ -86,4 +86,3 @@ func monitor(errors <-chan os.Error) {
 func report(err interface{}) {
 	fmt.Fprintf(os.Stderr, "%s\n", err)
 }
-

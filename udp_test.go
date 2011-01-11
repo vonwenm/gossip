@@ -88,7 +88,7 @@ func startClient(t *testing.T, port uint) *Conn {
 	go monitor(conn.Err, t)
 	conn.AddHandler(receiveReply)
 
-	addr := fmt.Sprintf("127.0.0.1:%d",port)
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
 	if err := conn.Dial(addr); err != nil {
 		t.Fatalf("Cannot connect to server: %q", err)
 		return nil
