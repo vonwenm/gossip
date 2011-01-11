@@ -10,7 +10,8 @@ import (
 
 type Message []byte
 
-const MessageSize = 1024
+// See RFC 1035 Section 4.2.1
+const MessageSize = 512
 
 // Message with a source or destination address of the form host:port.
 type Packet struct {
