@@ -130,7 +130,7 @@ func (conn *Conn) Unicast(msg Message) {
 	if conn.IsConnected() {
 		conn.out <- &Packet{nil, msg}
 	} else {
-		conn.Err <- ErrClosedConn
+		conn.error("conn.Unicast(): %s", ErrClosedConn.String())
 	}
 }
 
