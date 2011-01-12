@@ -48,7 +48,7 @@ func TestPeer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("TestPeer could not resolve peer address: %s.", err)
 	}
-	peer0.SendTo(msg, peer1Addr)
+	peer0.UnicastTo(msg, peer1Addr)
 
 	msg = <-reply
 	actualReply := string([]byte(msg))
@@ -95,7 +95,7 @@ func startClient(t *testing.T, port uint) *Conn {
 	}
 
 	msg := []byte(expectedRequest)
-	conn.Send(msg)
+	conn.Unicast(msg)
 
 	return conn
 }
@@ -112,9 +112,9 @@ func monitor(errors <-chan os.Error, t *testing.T) {
 func sendReply(conn *Conn, p *Packet) {
 	actualRequest := string([]byte(p.Msg))
 	if actualRequest == expectedRequest {
-		conn.SendTo([]byte(expectedReply), p.Addr)
+		conn.UnicastTo([]byte(expectedReply), p.Addr)
 	} else {
-		conn.SendTo([]byte("Go away!"), p.Addr)
+		conn.UnicastTo([]byte("Go away!"), p.Addr)
 	}
 }
 

@@ -47,7 +47,7 @@ func main() {
 
 	// loop until EOF
 	for line := range lines {
-		conn.SendTo([]byte(line), udpAddr)
+		conn.UnicastTo([]byte(line), udpAddr)
 	}
 }
 

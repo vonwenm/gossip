@@ -126,7 +126,7 @@ func (conn *Conn) Disconnect() {
 }
 
 // Send the specified message to the earlier dialed remote end-point.
-func (conn *Conn) Send(msg Message) {
+func (conn *Conn) Unicast(msg Message) {
 	if conn.IsConnected() {
 		conn.out <- &Packet{nil, msg}
 	} else {
@@ -135,11 +135,11 @@ func (conn *Conn) Send(msg Message) {
 }
 
 // Send the message to the remote end-point over an unreliable connection.
-func (conn *Conn) SendTo(msg Message, addr *net.UDPAddr) {
+func (conn *Conn) UnicastTo(msg Message, addr *net.UDPAddr) {
 	if conn.IsConnected() {
 		conn.out <- &Packet{addr, msg}
 	} else {
-		conn.error("conn.SendTo(): Cannot send message to %s because %s",
+		conn.error("conn.UnicastTo(): Cannot send message to %s because %s",
 			addr.String(), ErrClosedConn.String())
 	}
 }
