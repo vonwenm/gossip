@@ -127,21 +127,18 @@ func (conn *Conn) Disconnect() {
 
 // Send the specified message to the earlier dialed remote end-point.
 func (conn *Conn) Unicast(msg Message) {
-	if conn.IsConnected() {
-		conn.out <- &Packet{nil, msg}
-	} else {
-		conn.error("conn.Unicast(): %s", ErrClosedConn.String())
-	}
+	conn.send(msg, nil)
 }
 
 // Send the message to the remote end-point over an unreliable connection.
 func (conn *Conn) UnicastTo(msg Message, addr *net.UDPAddr) {
-	if conn.IsConnected() {
-		conn.out <- &Packet{addr, msg}
-	} else {
-		conn.error("conn.UnicastTo(): Cannot send message to %s because %s",
-			addr.String(), ErrClosedConn.String())
-	}
+	conn.send(msg, addr)
+}
+
+// Write message to internal channel which is read by sending().
+// The addr argument may be nil if Dial() has been used to establish the socket.
+func (conn *Conn) send(msg Message, addr *net. UDPAddr) {
+	conn.out <- &Packet{addr, msg}
 }
 
 // Start background processes
@@ -161,10 +158,20 @@ func (conn *Conn) sending() {
 
 		var err os.Error
 		if p.Addr == nil {
+			if !conn.IsConnected() {
+				conn.error("conn.sending(): [%s] %s", p.Addr.String(), ErrClosedConn.String())
+				continue
+			}
+
 			if _, err = conn.sock.Write(p.Msg); err != nil {
 				conn.error("conn.sending(): %s", err.String())
 			}
 		} else {
+			if !conn.IsConnected() {
+				conn.error("conn.sending(): %s", ErrClosedConn.String())
+				continue
+			}
+
 			if _, err = conn.sock.WriteTo(p.Msg, p.Addr); err != nil {
 				conn.error("conn.sending() [%s]: %s", p.Addr.String(), err.String())
 			}
