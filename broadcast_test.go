@@ -14,13 +14,9 @@ func TestBroadcast(t *testing.T) {
 	c := make(chan bool)
 	go respond(t, responder)
 	go receive(t, requester, c)
-	addr, err := net.ResolveUDPAddr(net.IPv4bcast.String() + ":8200")
-	if err != nil {
-		t.Fatalf("Cannot resolve broadcast address: %s", err)
-	}
-
+	addr := &net.UDPAddr{IP:net.IPv4bcast, Port:8200}
 	request := []byte("Some request")
-	_, err = requester.WriteTo(request, addr)
+	_, err := requester.WriteTo(request, addr)
 	if err != nil {
 		t.Fatalf("Unable to respond to request: %s", err)
 	}
